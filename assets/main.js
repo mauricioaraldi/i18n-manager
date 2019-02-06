@@ -3,6 +3,7 @@ const fs = require('fs');
 
 // Consts
 const LOCALES_PATH = 'testLocales';
+const IDENTATION_CHARACTER = '	';
 
 // Globals
 /**
@@ -28,7 +29,7 @@ window.onload = () => {
 		// for (let locale in LOCALES) {
 			// verifySorting(LOCALES[locale]);
 		// }
-		verifySorting(LOCALES['en-us']);
+		verifySorting(LOCALES['en-us-test']);
 	});
 };
 
@@ -98,12 +99,25 @@ function drawLoadedLocales(locales) {
  * @author mauricio.araldi
  * @since 0.0.1
  * 
- * @param {Array} localeData Array representation of the locale, to be sorted
+ * @param {Array} data Array with lines representing the object to be sorted
  * @param {String} currentKey The current key being sorted in the bigger object
  * @return {String} Message with the sort error encountered
  */
-function verifySorting(localeData, currentKey = '') {
-	console.log(localeData);
+function verifySorting(data) {
+	let map = mapObjectFromStringArray(data);
+
+	// curIdentationKeys.sort().forEach(key => {
+	// 	console.log('key', key);
+	// 	console.log('data', map);
+	// 	for (let i = map[key].start; i >= map[key].end; i++) {
+	// 		newData.push(data[i]);
+	// 	}
+	// });
+
+	console.log(map);
+	console.log('- - - - - - -');
+
+
 	// let strings = [],
 		// objects = [];
 
@@ -125,4 +139,48 @@ function verifySorting(localeData, currentKey = '') {
 	// console.log('- - - - - - - -', currentKey, '- - - - - - - -');
 	// console.log('Strings', strings);
 	// console.log('Objects', objects);
+}
+
+/**
+ * Creates a map of the object, returnin the keys, where they start and where they end
+ * 
+ * @author mauricio.araldi
+ * @since 0.0.1
+ *
+ * @param {Array} data Array with lines representing the object to be mapped
+ * @return {Object} The mapped object data
+ */
+function mapObjectFromStringArray(data) {
+	let map = {},
+		identationOrder = [];
+
+	data.forEach((line, index) => {
+		if (line.indexOf('{') > -1 || line.indexOf(':') > -1) {
+			let identationMatches = line.match(new RegExp(IDENTATION_CHARACTER, 'g')),
+				key = line.slice(line.indexOf('"') + 1, line.lastIndexOf('"'));
+
+			if (!key) {
+				key = '{';
+			}
+
+			map[key] = {
+				start: index,
+				identation: identationMatches ? identationMatches.length : 0
+			}
+
+			if (line.indexOf('{') > -1) {
+				identationOrder.push(key);
+			} else {
+				map[key].end = index;
+			}
+		}
+
+		console.log('map', map);
+
+		if (line.indexOf('}') > -1) {
+			map[identationOrder.pop()].end = index;
+		}
+	});
+
+	return map;
 }

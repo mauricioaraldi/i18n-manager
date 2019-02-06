@@ -13,7 +13,7 @@ In the current pattern, each locale has a JSON file. The filename represents whi
 * _Language_, which will contain the strings to use;
 * _Mask_, which contains masks to how some specific numbers are normally shown in that country (telephone, ZIP code, etc.);
 
-Each key can contain an object or a string as value, which can contain another object or string as value and so on. Then, in the end, it can be something like:
+Each key can contain an object or a string as value, which can contain another object or string as value and so on. No final key (which contains string as value) should ever be equal to any other key. Then, in the end, it can be something like:
 
 **en-us.json**
 ```json
@@ -54,4 +54,4 @@ This project is licensed under GNU General Public License 3. See LICENSE file fo
 - Electron 4.0.4
 
 ## Contributors
-- Mauricio Araldi, @mauricioaraldi
+- Mauricio Araldi, (@mauricioaraldi)[https://github.com/mauricioaraldi/]
