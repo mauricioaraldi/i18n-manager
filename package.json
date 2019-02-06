@@ -1,0 +1,24 @@
+{
+	"name": "i18n-manager",
+	"version": "0.0.1",
+	"description": "Helps manage i18n files",
+	"keywords": ["i18n", "manager"],
+	"homepage": "https://github.com/mauricioaraldi/i18n-manager",
+	"main": "index.js",
+	"scripts": {
+		"start": "electron .",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": {
+		"name": "Mauricio Araldi",
+		"url": "https://github.com/mauricioaraldi"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"repository": {
+		"type" : "git",
+		"url" : "https://github.com/mauricioaraldi/i18n-manager.git"
+	},
+	"devDependencies": {
+		"electron": "^4.0.4"
+	}
+}

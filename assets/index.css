@@ -1,0 +1,28 @@
+h1 {
+	text-align: center;
+}
+
+#locales {
+	border: 1px solid #000000;
+	margin: 1rem;
+	padding: 1rem;
+}
+
+#locales > p {
+	margin-top: 0;
+}
+
+#locales > div {
+	display: flex;
+}
+
+#locales > div > span {
+	background-color: #EEEEEE;
+	margin-right: 1rem;
+	padding: .5rem;
+	text-align: center;
+}
+
+#buttons {
+	margin: 1rem;
+}

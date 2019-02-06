@@ -1,0 +1,28 @@
+{
+	"masks": {},
+	"datetime": {},
+	"language": {
+		"login": {
+			"xyz": 789,
+			"abc": 123,
+			"mno": 456
+		},
+		"mainmenu": {
+			"xyz": 789,
+			"mno": 456,
+			"abc": 123
+		},
+		"test": {
+			"testString": "string",
+			"testOne": {
+				"insideTestOne": "one"
+			},
+			"testTwo": {
+				"insideTestTwo": "two"
+			},
+			"testThree": {
+				"insideTestOne": "three"
+			}
+		}
+	}
+}
