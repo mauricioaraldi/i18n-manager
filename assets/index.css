@@ -26,3 +26,15 @@ h1 {
 #buttons {
 	margin: 1rem;
 }
+
+#message {
+	background: #EEEEEE;
+	margin: 1rem;
+	padding: .5rem;
+}
+
+#message > span {
+	display: block;
+	padding: .5rem 0;
+	white-space: pre;
+}
