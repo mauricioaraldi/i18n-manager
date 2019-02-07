@@ -54,4 +54,4 @@ This project is licensed under GNU General Public License 3. See LICENSE file fo
 - Electron 4.0.4
 
 ## Contributors
-- Mauricio Araldi, (@mauricioaraldi)[https://github.com/mauricioaraldi/]
+- Mauricio Araldi, [@mauricioaraldi](https://github.com/mauricioaraldi/)
