@@ -38,3 +38,7 @@ h1 {
 	padding: .5rem 0;
 	white-space: pre;
 }
+
+.diff-key {
+	font-weight: bolder;
+}

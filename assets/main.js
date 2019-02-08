@@ -3,7 +3,7 @@ const fs = require('fs');
 
 // Consts
 const LOCALES_PATH = 'testLocales';
-const IDENTATION_CHARACTER = '	';
+const IDENTATION_STRING = '	';
 
 // Globals
 /**
@@ -12,14 +12,19 @@ const IDENTATION_CHARACTER = '	';
  * 
  * @type {Object}
  */
-LOCALES = {};
+LOCALES_AS_TEXT = {};
+
+/**
+ * Contains LOCALES as keys, and their value are the content of the locale files,
+ * as objects also
+ * 
+ * @type {Object}
+ */
+LOCALES_AS_OBJECT = {};
 
 // Body
 loadLocales().then(
-	result => {
-		LOCALES = result;
-		drawLoadedLocales(LOCALES);
-	},
+	result => drawLoadedLocales(LOCALES_AS_OBJECT),
 	error => console.error(error)
 );
 
@@ -29,11 +34,81 @@ window.onload = () => {
 		// for (let locale in LOCALES) {
 			// verifySorting(LOCALES[locale]);
 		// }
-		verifySorting(LOCALES['en-us-test']);
+		let sortedValue = sortObject(LOCALES_AS_OBJECT['en-us-test']),
+			diff = createDiffFromMap(sortedValue);
+
+		printDiff(diff);
 	});
 };
 
 // Functions
+/**
+ * Creates a diff directly from map
+ * 
+ * @author mauricio.araldi
+ * @since 0.0.1
+ * 
+ * @param {Map} map The object to generate diff
+ * @return {Array<String>} Lines representing the diff
+ */
+function createDiffFromMap(map) {
+	let diff = [];
+
+	for (entry of map) {
+		let [key, data] = entry;
+
+		// console.log('ORIGINAL LINE', key, data.previousLine);
+
+		if (typeof data.value === 'object') {
+			diff.push(...createDiffFromMap(data.value));
+		}
+
+		if (data.previousLine !== data.newLine) {
+			diff.push(`Key <span class="diff-key">${key}</span> moved from line ${data.previousLine} to line ${data.newLine}`);
+		}
+	}
+
+	return diff;
+}
+
+/**
+ * Get an array of lines from a map
+ * 
+ * @author mauricio.araldi
+ * @since 0.0.1
+ * 
+ * @param {Map} map The map to be transformed into an array of lines
+ * @param {Number} [identation = 1] The indentation to be used in text
+ * @return {Array<String>} Lines representing the map
+ */
+function getLinesArrayFromMap(map, identation = 1) {
+	let curObjAsArray = [];
+
+	for (entry of map) {
+		let [key, { value }] = entry,
+			curIdentation = IDENTATION_STRING.repeat(identation);
+
+		if (typeof value === 'object') {
+			value = getLinesArrayFromMap(value, identation + 1);
+
+			curObjAsArray.push(`${curIdentation}${key}: {`);
+			curObjAsArray.push(...value);
+			curObjAsArray.push(`${curIdentation}},`);
+		} else {
+			curObjAsArray.push(`${curIdentation}${key}: ${value},`);
+		}
+	}
+
+	// Removes last comma, because of JSON validity
+	curObjAsArray[curObjAsArray.length - 1] = curObjAsArray[curObjAsArray.length - 1].slice(0, -1);
+
+	if (identation === 1) {
+		curObjAsArray = ['{'].concat(curObjAsArray).concat(['}']);
+	}
+
+	return curObjAsArray;
+}
+
 /**
  * Load locales from the locales folder
  *
@@ -43,8 +118,6 @@ window.onload = () => {
  * @return {Promise<Object>} A promise with loaded locales as array of lines by locale
  */
 function loadLocales() {
-	let locales = {};
-
 	return new Promise((resolve, reject) => {
 		fs.readdir(LOCALES_PATH, (err, files) => {
 			if (err) {
@@ -61,10 +134,11 @@ function loadLocales() {
 
 					let locale = file.slice(0, file.indexOf('.'));
 
-					locales[locale] = data.split(/\n/);
+					LOCALES_AS_TEXT[locale] = data.split(/\n/);
+					LOCALES_AS_OBJECT[locale] = JSON.parse(data);
 
 					if (++filesLoaded == files.length) {
-						resolve(locales);
+						resolve(true);
 					}
 				});
 			});
@@ -94,51 +168,85 @@ function drawLoadedLocales(locales) {
 }
 
 /**
- * Verifies the sorting of the object
+ * Sorts an object by key
  * 
  * @author mauricio.araldi
  * @since 0.0.1
  * 
- * @param {Array} data Array with lines representing the object to be sorted
- * @param {String} currentKey The current key being sorted in the bigger object
- * @return {String} Message with the sort error encountered
+ * @param {Object} data The object to be sorted
+ * @param {Integer} startingLineNumber The line number from which to start counting on keeping
+ * track on previous and new lines
+ * @return {Map} The object sorted
  */
-function verifySorting(data) {
-	let map = {},
-		identationOrder = [],
-		sortedData;
+function sortObject(data, startingLineNumber = 2, parentLinesMoved = 0) {
+	let sortedData = new Map(),
+		keys = Object.keys(data),
+		previousLinesRecord = {},
+		currentLine = startingLineNumber;
 
-	data.forEach((line, index) => {
-		if (line.indexOf('{') > -1 || line.indexOf(':') > -1) {
-			let identationMatches = line.match(new RegExp(IDENTATION_CHARACTER, 'g')),
-				key = line.slice(line.indexOf('"') + 1, line.lastIndexOf('"'));
+	keys.forEach((key, index) => {
+		previousLinesRecord[key] = currentLine;
 
-			if (!key) {
-				key = '{';
-			}
-
-			map[key] = {
-				start: index,
-				identation: identationMatches ? identationMatches.length : 0
-			}
-
-			if (line.indexOf('{') > -1) {
-				identationOrder.push(key);
-			} else {
-				map[key].end = index;
-			}
-		}
-
-		if (line.indexOf('}') > -1) {
-			let key = identationOrder.pop();
-			
-			map[key].end = index;
-
-			sortedData = sortLinesArray(data, map[key].start + 1, map[key].end);
+		if (typeof data[key] === 'object') {
+			currentLine += getObjectFullSize(data[key], true);
+		} else {
+			currentLine++;
 		}
 	});
 
-	printDiff(createLinesArrayDiff(data, sortedData));
+	keys.sort().forEach((key, index) => {
+		let value = data[key];
+
+		if (typeof value === 'object') {
+			value = sortObject(value, previousLinesRecord[key] + 1, previousLinesRecord[key] - keys.indexOf(key));
+		}
+
+		sortedData.set(
+			key,
+			{
+				value,
+				newLine: previousLinesRecord[key] + parentLinesMoved + index,
+				previousLine: previousLinesRecord[key]
+			}
+		);
+	});
+
+	return sortedData;
+}
+
+/**
+ * Get the size of an object, taking in account the size of each entry also
+ * 
+ * @author mauricio.araldi
+ * @since 0.0.1
+ *
+ * @param {Object} object The object to get full size
+ * @param {Integer} [countOpeningsAndClosings] Take in account the lines
+ * opening and closing brackets
+ * @return {Integer} Object full size
+ */
+function getObjectFullSize(object, countOpeningsAndClosings, isFirstLevel = true) {
+	let size = 0;
+
+	for (let key in object) {
+		let value = object[key];
+
+		size++;
+
+		if (typeof value === 'object') {
+			size += getObjectFullSize(value, countOpeningsAndClosings, false);
+
+			if (countOpeningsAndClosings) {
+				size++;
+			}
+		}
+	}
+
+	if (isFirstLevel) {
+		size += 2;
+	}
+
+	return size;
 }
 
 /**
@@ -158,7 +266,7 @@ function printDiff(diff) {
 	diff.forEach(entry => {
 		let entryEl = document.createElement('SPAN');
 
-		entryEl.textContent = entry;
+		entryEl.innerHTML = entry;
 
 		messageContainer.appendChild(entryEl);
 	});
@@ -190,62 +298,15 @@ function clearMessageContainer() {
  * @param {Array<String>} comparison Second array to be used in comparison
  * @return {Array<String>} Array with all the diffs encountered
  */
-function createLinesArrayDiff(base, comparison) {
+function createLocaleDiff(base, comparison) {
 	let numberOfLines = base.length > comparison.length ? base.length : comparison.length,
 		diff = [];
 
 	for (let i = 0; i <= numberOfLines; i++) {
 		if (base[i] != comparison[i]) {
-			diff.push(`Line ${i}:\n[-]${base[i]}\n[+]${comparison[i]}`);
+			diff.push(`Line ${i + 1}:\n[-]${base[i]}\n[+]${comparison[i]}`);
 		}
 	}
 
 	return diff;
-}
-
-/**
- * Sort an array of lines
- * 
- * @author mauricio.araldi
- * @since 0.0.1
- *
- * @param {Array<String>} data The data to be modified (normally the general array, with all lines)
- * @param {Integer} start Index from which to start sorting
- * @param {Integer} end Index untill which to sort
- * 
- * @return {Array} Modified data, sorted from index start to index end
- */
-function sortLinesArray(data, start, end) {
-	let sortedData = data.slice(),
-		dataToSort = data.slice(start, end);
-
-	console.log('to sort', sortedData.toString());
-
-	dataToSort.sort((a, b) => {
-		let aKey = a.slice(a.indexOf('"'), a.lastIndexOf('"')),
-			bKey = b.slice(b.indexOf('"'), b.lastIndexOf('"')),
-			keys = [aKey, bKey];
-
-		keys.sort();
-
-		if (aKey === bKey) {
-			return 0;
-		}
-
-		if (keys[0] === bKey) {
-			return 1;
-		}
-
-		if (keys[0] === aKey) {
-			return -1;
-		}
-	});
-
-	for (let i = 0; i < dataToSort.length; i++) {
-		sortedData[start + i] = dataToSort[i];
-	}
-
-	console.log('sorted', sortedData);
-
-	return sortedData;
 }
