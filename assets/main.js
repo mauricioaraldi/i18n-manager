@@ -59,8 +59,6 @@ function createDiffFromMap(map) {
 	for (entry of map) {
 		let [key, data] = entry;
 
-		// console.log('ORIGINAL LINE', key, data.previousLine);
-
 		if (typeof data.value === 'object') {
 			diff.push(...createDiffFromMap(data.value));
 		}
@@ -177,6 +175,7 @@ function drawLoadedLocales(locales) {
  * 
  * @param {Object} data The object to be sorted
  * @param {Integer} parentPosition The line which the parent starts
+ * @param {Integer} parentNewPosition The position to which the parent has gonne to
  * @return {Map} The object sorted
  */
 function sortObject(data, parentPosition = 1, parentNewPosition = 1) {
@@ -185,9 +184,7 @@ function sortObject(data, parentPosition = 1, parentNewPosition = 1) {
 		previousLinesRecord = {},
 		currentLine = parentPosition + 1;
 
-
 	keys.forEach((key, index) => {
-	// console.log(key, 'parent is', parentPosition, 'new', parentNewPosition);
 		previousLinesRecord[key] = currentLine;
 
 		if (typeof data[key] === 'object') {
