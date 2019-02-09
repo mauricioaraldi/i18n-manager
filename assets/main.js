@@ -38,6 +38,8 @@ window.onload = () => {
 			diff = createDiffFromMap(sortedValue);
 
 		printDiff(diff);
+
+		document.querySelector('#applySort').classList.remove('hidden');
 	});
 };
 
@@ -174,17 +176,18 @@ function drawLoadedLocales(locales) {
  * @since 0.0.1
  * 
  * @param {Object} data The object to be sorted
- * @param {Integer} startingLineNumber The line number from which to start counting on keeping
- * track on previous and new lines
+ * @param {Integer} parentPosition The line which the parent starts
  * @return {Map} The object sorted
  */
-function sortObject(data, startingLineNumber = 2, parentLinesMoved = 0) {
+function sortObject(data, parentPosition = 1, parentNewPosition = 1) {
 	let sortedData = new Map(),
 		keys = Object.keys(data),
 		previousLinesRecord = {},
-		currentLine = startingLineNumber;
+		currentLine = parentPosition + 1;
+
 
 	keys.forEach((key, index) => {
+	// console.log(key, 'parent is', parentPosition, 'new', parentNewPosition);
 		previousLinesRecord[key] = currentLine;
 
 		if (typeof data[key] === 'object') {
@@ -194,21 +197,29 @@ function sortObject(data, startingLineNumber = 2, parentLinesMoved = 0) {
 		}
 	});
 
+	currentLine = parentNewPosition + 1;
+
 	keys.sort().forEach((key, index) => {
 		let value = data[key];
 
 		if (typeof value === 'object') {
-			value = sortObject(value, previousLinesRecord[key] + 1, previousLinesRecord[key] - keys.indexOf(key));
+			value = sortObject(value, previousLinesRecord[key], currentLine);
 		}
 
 		sortedData.set(
 			key,
 			{
 				value,
-				newLine: previousLinesRecord[key] + parentLinesMoved + index,
+				newLine: currentLine,
 				previousLine: previousLinesRecord[key]
 			}
 		);
+
+		if (typeof value === 'object') {
+			currentLine += getObjectFullSize(data[key], true);
+		} else {
+			currentLine++;
+		}
 	});
 
 	return sortedData;
