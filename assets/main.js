@@ -52,10 +52,56 @@ window.onload = () => {
 			resolve => alert('Sort applied!'),
 			error => alert(error)
 		);
+
+		document.querySelector('#applySort').classList.add('hidden');
+	});
+
+	document.querySelector('#verifyIntegrity').addEventListener('click', () => {
+		let tempLocalesForTest = {
+			'en-us-test': LOCALES_AS_OBJECT['en-us-test'],
+			'pt-br-test': LOCALES_AS_OBJECT['pt-br-test']
+		};
+
+		console.log(compareLocales(tempLocalesForTest));
 	});
 };
 
 // Functions
+/**
+ * Compare all locales and return all results
+ * 
+ * @author mauricio.araldi
+ * @since 0.0.1
+ *
+ * @param {Object} locales Locales to compare
+ * @return {Object<Array<String>>} All the results of the comparison, by locale
+ */
+function compareLocales(locales) {
+	let results = {};
+
+	for (let masterLocale in locales) {
+		let masterValue = locales[masterLocale];
+
+		results[masterLocale] = {};
+
+		for (let comparisonLocale in locales) {
+			let comparisonValue = locales[comparisonLocale];
+
+			if (comparisonLocale === masterLocale) {
+				continue;
+			}
+
+			results[masterLocale][comparisonLocale] = [];
+
+			results[masterLocale][comparisonLocale].push('YAY');
+
+			// Execute comparison
+		}
+	}
+
+	return results;
+}
+
 /**
  * Writes a map into a file
  * 
