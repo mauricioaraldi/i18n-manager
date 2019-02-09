@@ -25,7 +25,7 @@ LOCALES_AS_OBJECT = {};
 // Body
 loadLocales().then(
 	result => drawLoadedLocales(LOCALES_AS_OBJECT),
-	error => console.error(error)
+	error => alert(error)
 );
 
 // Binds
@@ -41,9 +41,45 @@ window.onload = () => {
 
 		document.querySelector('#applySort').classList.remove('hidden');
 	});
+
+	document.querySelector('#applySort').addEventListener('click', () => {
+		// for (let locale in LOCALES) {
+			// verifySorting(LOCALES[locale]);
+		// }
+		let sortedValue = sortObject(LOCALES_AS_OBJECT['en-us-test']);
+
+		writeMapToFile('en-us-test', sortedValue).then(
+			resolve => alert('Sort applied!'),
+			error => alert(error)
+		);
+	});
 };
 
 // Functions
+/**
+ * Writes a map into a file
+ * 
+ * @author mauricio.araldi
+ * @since 0.0.1
+ * 
+ * @param {String} key The key that representes the locale (e.g. en-us, pt-br, etc)
+ * @param {Map<String, any>} map Map of to be written in the file
+ * @returns {Promise} Promise with the result of the operation
+ */
+function writeMapToFile(key, map) {
+	return new Promise((resolve, reject) => {
+		let textContent = getLinesArrayFromMap(map).join('\n');
+
+		fs.writeFile(`${LOCALES_PATH}/${key}.json`, textContent, err => {
+			if (err) {
+				return reject(err);
+			};
+
+			resolve(true);
+		});
+	});
+}
+
 /**
  * Creates a diff directly from map
  * 
@@ -91,11 +127,11 @@ function getLinesArrayFromMap(map, identation = 1) {
 		if (typeof value === 'object') {
 			value = getLinesArrayFromMap(value, identation + 1);
 
-			curObjAsArray.push(`${curIdentation}${key}: {`);
+			curObjAsArray.push(`${curIdentation}"${key}": {`);
 			curObjAsArray.push(...value);
 			curObjAsArray.push(`${curIdentation}},`);
 		} else {
-			curObjAsArray.push(`${curIdentation}${key}: ${value},`);
+			curObjAsArray.push(`${curIdentation}"${key}": "${value}",`);
 		}
 	}
 
