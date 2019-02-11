@@ -68,9 +68,134 @@ window.onload = () => {
 
 		document.querySelector('#fixIntegrity').classList.remove('hidden');
 	});
+
+	document.querySelector('#fixIntegrity').addEventListener('click', () => {
+		const tempLocalesForTest = {
+			'en-us-test': LOCALES_AS_OBJECT['en-us-test'],
+			'pt-br-test': LOCALES_AS_OBJECT['pt-br-test']
+		},
+			fixedObjects = fixIntegrity(tempLocalesForTest);
+
+		// for (let locale in fixedObjects) {
+			writeObjectToFile('pt-br-test', fixedObjects['pt-br-test']).then(
+				resolve => alert('Fix applied!'),
+				error => alert(error)
+			);
+		// }
+
+		document.querySelector('#fixIntegrity').classList.add('hidden');
+	});
 };
 
 // Functions
+/**
+ * Writes an object into a file
+ * 
+ * @author mauricio.araldi
+ * @since 0.0.1
+ * 
+ * @param {String} key The key that representes the locale (e.g. en-us, pt-br, etc)
+ * @param {Object} object Object to be written in the file
+ * @returns {Promise} Promise with the result of the operation
+ */
+function writeObjectToFile(key, object) {
+	return new Promise((resolve, reject) => {
+		let textContent = getLinesArrayFromObject(object).join('\n');
+
+		fs.writeFile(`${LOCALES_PATH}/${key}.json`, textContent, err => {
+			if (err) {
+				return reject(err);
+			};
+
+			resolve(true);
+		});
+	});
+}
+
+/**
+ * Get an array of lines from an object
+ * 
+ * @author mauricio.araldi
+ * @since 0.0.1
+ * 
+ * @param {Object} object The object to be transformed into an array of lines
+ * @param {Number} [identation = 1] The indentation to be used in text
+ * @return {Array<String>} Lines representing the object
+ */
+function getLinesArrayFromObject(object, identation = 1) {
+	let curObjAsArray = [];
+
+	for (let key in object) {
+		let value = object[key],
+			curIdentation = IDENTATION_STRING.repeat(identation);
+
+		if (typeof value === 'object') {
+			value = getLinesArrayFromObject(value, identation + 1);
+
+			curObjAsArray.push(`${curIdentation}"${key}": {`);
+			curObjAsArray.push(...value);
+			curObjAsArray.push(`${curIdentation}},`);
+		} else {
+			curObjAsArray.push(`${curIdentation}"${key}": "${value}",`);
+		}
+	}
+
+	// Removes last comma, because of JSON validity
+	curObjAsArray[curObjAsArray.length - 1] = curObjAsArray[curObjAsArray.length - 1].slice(0, -1);
+
+	if (identation === 1) {
+		curObjAsArray = ['{'].concat(curObjAsArray).concat(['}']);
+	}
+
+	return curObjAsArray;
+}
+
+/**
+ * Fix the integrity of objects. At the moment, this means adding (never removing)
+ * strings to make all objects equal
+ * 
+ * @author mauricio.araldi
+ * @since 0.0.1
+ * 
+ * @param {Object} objects Objects to be fixed
+ * @return {Object} Fixed objects
+ */
+function fixIntegrity(objects) {
+	let results = JSON.parse(JSON.stringify(objects));
+
+	for (let masterKey in objects) {
+		let masterValue = results[masterKey];
+
+		for (let comparisonKey in objects) {
+			let comparisonValue = results[comparisonKey];
+
+			if (comparisonKey === masterKey) {
+				continue;
+			}
+
+			for (let key in masterValue) {
+				if (!comparisonValue[key]) {
+					results[comparisonKey][key] = results[masterKey][key];
+				}
+
+				if (typeof masterValue[key] === 'object') {
+					let newVerification = {},
+						newResults;
+
+					newVerification[masterKey] = masterValue[key];
+					newVerification[comparisonKey] = comparisonValue[key];
+
+					newResults = fixIntegrity(newVerification);
+
+					results[comparisonKey][key] = newResults[comparisonKey];
+				}
+			}
+		}
+	}
+
+	return results;
+}
+
 /**
  * Creates a integrity diff from locale objects
  * 
