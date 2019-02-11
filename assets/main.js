@@ -34,8 +34,8 @@ window.onload = () => {
 		// for (let locale in LOCALES) {
 			// verifySorting(LOCALES[locale]);
 		// }
-		let sortedValue = sortObject(LOCALES_AS_OBJECT['en-us-test']),
-			diff = createDiffFromMap(sortedValue);
+		const sortedValue = sortObject(LOCALES_AS_OBJECT['en-us-test']),
+			diff = createSortingDiffFromMap(sortedValue);
 
 		printDiff(diff);
 
@@ -46,7 +46,7 @@ window.onload = () => {
 		// for (let locale in LOCALES) {
 			// verifySorting(LOCALES[locale]);
 		// }
-		let sortedValue = sortObject(LOCALES_AS_OBJECT['en-us-test']);
+		const sortedValue = sortObject(LOCALES_AS_OBJECT['en-us-test']);
 
 		writeMapToFile('en-us-test', sortedValue).then(
 			resolve => alert('Sort applied!'),
@@ -57,45 +57,77 @@ window.onload = () => {
 	});
 
 	document.querySelector('#verifyIntegrity').addEventListener('click', () => {
-		let tempLocalesForTest = {
+		const tempLocalesForTest = {
 			'en-us-test': LOCALES_AS_OBJECT['en-us-test'],
 			'pt-br-test': LOCALES_AS_OBJECT['pt-br-test']
-		};
+		},
+			comparisonResults = compareObjects(tempLocalesForTest),
+			diff = createIntegrityDiffFromObjects(comparisonResults);
 
-		console.log(compareLocales(tempLocalesForTest));
+		printDiff(diff);
+
+		document.querySelector('#fixIntegrity').classList.remove('hidden');
 	});
 };
 
 // Functions
 /**
- * Compare all locales and return all results
+ * Creates a integrity diff from locale objects
+ * 
+ * @author mauricio.araldi
+ * @since 0.0.1
+ * 
+ * @param {Object} object The objects with results of integrity comparison
+ * @return {Array<String>} Diff of the objects
+ */
+function createIntegrityDiffFromObjects(object) {
+	return [];
+}
+
+/**
+ * Compare objects and return a diff
  * 
  * @author mauricio.araldi
  * @since 0.0.1
  *
- * @param {Object} locales Locales to compare
- * @return {Object<Array<String>>} All the results of the comparison, by locale
+ * @param {Object} objects Object with objects to compare. The key will be used
+ * to separate results
+ * @return {Object<Array<String>>} All the results of the comparison, by key
  */
-function compareLocales(locales) {
+function compareObjects(objects) {
 	let results = {};
 
-	for (let masterLocale in locales) {
-		let masterValue = locales[masterLocale];
+	for (let masterKey in objects) {
+		let masterValue = objects[masterKey];
 
-		results[masterLocale] = {};
+		results[masterKey] = {};
 
-		for (let comparisonLocale in locales) {
-			let comparisonValue = locales[comparisonLocale];
+		for (let comparisonKey in objects) {
+			let comparisonValue = objects[comparisonKey];
 
-			if (comparisonLocale === masterLocale) {
+			if (comparisonKey === masterKey) {
 				continue;
 			}
 
-			results[masterLocale][comparisonLocale] = [];
+			results[masterKey][comparisonKey] = [];
 
-			results[masterLocale][comparisonLocale].push('YAY');
+			for (let key in masterValue) {
+				if (!comparisonValue[key]) {
+					results[masterKey][comparisonKey].push(`Missing ${key}`);
+				}
 
-			// Execute comparison
+				if (typeof masterValue[key] === 'object') {
+					let newComparison = {},
+						newResults;
+
+					newComparison[masterKey] = masterValue[key];
+					newComparison[comparisonKey] = comparisonValue[key];
+
+					newResults = compareObjects(newComparison);
+
+					results[masterKey][comparisonKey].push(...newResults[masterKey][comparisonKey]);
+				}
+			}
 		}
 	}
 
@@ -127,7 +159,7 @@ function writeMapToFile(key, map) {
 }
 
 /**
- * Creates a diff directly from map
+ * Creates a sorting diff directly from map
  * 
  * @author mauricio.araldi
  * @since 0.0.1
@@ -135,7 +167,7 @@ function writeMapToFile(key, map) {
  * @param {Map} map The object to generate diff
  * @return {Array<String>} Lines representing the diff
  */
-function createDiffFromMap(map) {
+function createSortingDiffFromMap(map) {
 	let diff = [];
 
 	for (entry of map) {
@@ -345,8 +377,7 @@ function getObjectFullSize(object, countOpeningsAndClosings, isFirstLevel = true
  * @author mauricio.araldi
  * @since 0.0.1
  * 
- * @param {Array<String>} diff [description]
- * @return {[type]} [description]
+ * @param {Array<String>} diff The diff to be displayed on screen
  */
 function printDiff(diff) {
 	let messageContainer = document.querySelector('#message');
@@ -375,28 +406,4 @@ function clearMessageContainer() {
 	while (messageContainer.firstChild) {
 		messageContainer.removeChild(messageContainer.firstChild);
 	}
-}
-
-
-/**
- * Creates a diff between two array os lines
- * 
- * @author mauricio.araldi
- * @since 0.0.1
- *
- * @param {Array<String>} base First array to be used in comparison
- * @param {Array<String>} comparison Second array to be used in comparison
- * @return {Array<String>} Array with all the diffs encountered
- */
-function createLocaleDiff(base, comparison) {
-	let numberOfLines = base.length > comparison.length ? base.length : comparison.length,
-		diff = [];
-
-	for (let i = 0; i <= numberOfLines; i++) {
-		if (base[i] != comparison[i]) {
-			diff.push(`Line ${i + 1}:\n[-]${base[i]}\n[+]${comparison[i]}`);
-		}
-	}
-
-	return diff;
 }
