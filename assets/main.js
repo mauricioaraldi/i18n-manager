@@ -2,7 +2,7 @@
 const fs = require('fs');
 
 // Consts
-const LOCALES_PATH = 'testLocales';
+const LOCALES_PATH = 'locales';
 const IDENTATION_STRING = '	';
 
 // Globals
