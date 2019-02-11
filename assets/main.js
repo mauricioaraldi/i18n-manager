@@ -81,7 +81,35 @@ window.onload = () => {
  * @return {Array<String>} Diff of the objects
  */
 function createIntegrityDiffFromObjects(object) {
-	return [];
+	let diff = [],
+		diffByKey = {};
+
+	for (let key in object) {
+		let value = object[key];
+
+		for (let innerKey in value) {
+			let innerValue = value[innerKey];
+
+			diffByKey[innerKey] = [];
+
+			innerValue.forEach(entry => {
+				diffByKey[innerKey].push(`${entry} (present in ${key})`);
+			});
+		}
+	}
+
+	for (let key in diffByKey) {
+		let value = diffByKey[key];
+
+		if (!value.length) {
+			continue;
+		}
+
+		diff.push(`<h2>${key}</h2>`);
+		diff.push(...value);
+	}
+
+	return diff;
 }
 
 /**
@@ -92,9 +120,11 @@ function createIntegrityDiffFromObjects(object) {
  *
  * @param {Object} objects Object with objects to compare. The key will be used
  * to separate results
+ * @param {String} previousKey Key that preceds the objects being compared (used to 
+ * create a path, like 'one.two.three')
  * @return {Object<Array<String>>} All the results of the comparison, by key
  */
-function compareObjects(objects) {
+function compareObjects(objects, previousKey) {
 	let results = {};
 
 	for (let masterKey in objects) {
@@ -113,7 +143,9 @@ function compareObjects(objects) {
 
 			for (let key in masterValue) {
 				if (!comparisonValue[key]) {
-					results[masterKey][comparisonKey].push(`Missing ${key}`);
+					results[masterKey][comparisonKey].push(
+						`Missing <span class="diff-key">${previousKey ? `${previousKey}.` : ''}${key}</span>`
+					);
 				}
 
 				if (typeof masterValue[key] === 'object') {
@@ -123,7 +155,7 @@ function compareObjects(objects) {
 					newComparison[masterKey] = masterValue[key];
 					newComparison[comparisonKey] = comparisonValue[key];
 
-					newResults = compareObjects(newComparison);
+					newResults = compareObjects(newComparison, `${previousKey ? `${previousKey}.` : ''}${key}`);
 
 					results[masterKey][comparisonKey].push(...newResults[masterKey][comparisonKey]);
 				}
