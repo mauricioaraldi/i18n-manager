@@ -50,6 +50,8 @@ Each key can contain an object or a string as value, which can contain another o
 ## Disclaimer
 This project is licensed under GNU General Public License 3. See LICENSE file for more informations.
 
+No results are guaranteed. Use this software at your own risk.
+
 ## Requirements
 - Electron 4.0.4
 

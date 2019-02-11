@@ -31,11 +31,17 @@ loadLocales().then(
 // Binds
 window.onload = () => {
 	document.querySelector('#verifySort').addEventListener('click', () => {
-		// for (let locale in LOCALES) {
-			// verifySorting(LOCALES[locale]);
-		// }
-		const sortedValue = sortObject(LOCALES_AS_OBJECT['en-us-test']),
-			diff = createSortingDiffFromMap(sortedValue);
+		let diff = [];
+
+		for (let locale in LOCALES_AS_OBJECT) {
+			let sortedValue = sortObject(LOCALES_AS_OBJECT[locale]),
+				currentDiff = createSortingDiffFromMap(sortedValue);
+
+			if (currentDiff.length) {
+				diff.push(`<h2>${locale}</h2>`);
+				diff.push(...currentDiff);
+			}
+		}
 
 		printDiff(diff);
 
@@ -43,25 +49,29 @@ window.onload = () => {
 	});
 
 	document.querySelector('#applySort').addEventListener('click', () => {
-		// for (let locale in LOCALES) {
-			// verifySorting(LOCALES[locale]);
-		// }
-		const sortedValue = sortObject(LOCALES_AS_OBJECT['en-us-test']);
+		let localesQuantity = 0,
+			localesWritten = 0;
 
-		writeMapToFile('en-us-test', sortedValue).then(
-			resolve => alert('Sort applied!'),
-			error => alert(error)
-		);
+		for (let locale in LOCALES_AS_OBJECT) {
+			let sortedValue = sortObject(LOCALES_AS_OBJECT[locale]);
+
+			localesQuantity++;
+
+			writeMapToFile(locale, sortedValue).then(
+				resolve => {
+					if (++localesWritten === localesQuantity) {
+						alert('Sort applied!');
+					}
+				},
+				error => alert(error)
+			);
+		}
 
 		document.querySelector('#applySort').classList.add('hidden');
 	});
 
 	document.querySelector('#verifyIntegrity').addEventListener('click', () => {
-		const tempLocalesForTest = {
-			'en-us-test': LOCALES_AS_OBJECT['en-us-test'],
-			'pt-br-test': LOCALES_AS_OBJECT['pt-br-test']
-		},
-			comparisonResults = compareObjects(tempLocalesForTest),
+		const comparisonResults = compareObjects(LOCALES_AS_OBJECT),
 			diff = createIntegrityDiffFromObjects(comparisonResults);
 
 		printDiff(diff);
@@ -70,18 +80,23 @@ window.onload = () => {
 	});
 
 	document.querySelector('#fixIntegrity').addEventListener('click', () => {
-		const tempLocalesForTest = {
-			'en-us-test': LOCALES_AS_OBJECT['en-us-test'],
-			'pt-br-test': LOCALES_AS_OBJECT['pt-br-test']
-		},
-			fixedObjects = fixIntegrity(tempLocalesForTest);
+		const fixedObjects = fixIntegrity(LOCALES_AS_OBJECT);
 
-		// for (let locale in fixedObjects) {
-			writeObjectToFile('pt-br-test', fixedObjects['pt-br-test']).then(
-				resolve => alert('Fix applied!'),
+		let localesQuantity = 0,
+			localesWritten = 0;
+
+		for (let locale in fixedObjects) {
+			localesQuantity++;
+
+			writeObjectToFile(locale, fixedObjects[locale]).then(
+				resolve => {
+					if (++localesWritten === localesQuantity) {
+						alert('Fix applied!');
+					}
+				},
 				error => alert(error)
 			);
-		// }
+		}
 
 		document.querySelector('#fixIntegrity').classList.add('hidden');
 	});
@@ -129,6 +144,10 @@ function getLinesArrayFromObject(object, identation = 1) {
 		let value = object[key],
 			curIdentation = IDENTATION_STRING.repeat(identation);
 
+		if (!value) {
+			continue;
+		}
+
 		if (typeof value === 'object') {
 			value = getLinesArrayFromObject(value, identation + 1);
 
@@ -140,8 +159,10 @@ function getLinesArrayFromObject(object, identation = 1) {
 		}
 	}
 
-	// Removes last comma, because of JSON validity
-	curObjAsArray[curObjAsArray.length - 1] = curObjAsArray[curObjAsArray.length - 1].slice(0, -1);
+	if (curObjAsArray.length) {
+		// Removes last comma, because of JSON validity
+		curObjAsArray[curObjAsArray.length - 1] = curObjAsArray[curObjAsArray.length - 1].slice(0, -1);
+	}
 
 	if (identation === 1) {
 		curObjAsArray = ['{'].concat(curObjAsArray).concat(['}']);
@@ -271,6 +292,8 @@ function compareObjects(objects, previousKey) {
 					results[masterKey][comparisonKey].push(
 						`Missing <span class="diff-key">${previousKey ? `${previousKey}.` : ''}${key}</span>`
 					);
+
+					continue;
 				}
 
 				if (typeof masterValue[key] === 'object') {
@@ -331,7 +354,7 @@ function createSortingDiffFromMap(map) {
 		let [key, data] = entry;
 
 		if (typeof data.value === 'object') {
-			diff.push(...createDiffFromMap(data.value));
+			diff.push(...createSortingDiffFromMap(data.value));
 		}
 
 		if (data.previousLine !== data.newLine) {
@@ -359,6 +382,10 @@ function getLinesArrayFromMap(map, identation = 1) {
 		let [key, { value }] = entry,
 			curIdentation = IDENTATION_STRING.repeat(identation);
 
+		if (!value) {
+			continue;
+		}
+
 		if (typeof value === 'object') {
 			value = getLinesArrayFromMap(value, identation + 1);
 
@@ -370,8 +397,10 @@ function getLinesArrayFromMap(map, identation = 1) {
 		}
 	}
 
-	// Removes last comma, because of JSON validity
-	curObjAsArray[curObjAsArray.length - 1] = curObjAsArray[curObjAsArray.length - 1].slice(0, -1);
+	if (curObjAsArray.length) {
+		// Removes last comma, because of JSON validity
+		curObjAsArray[curObjAsArray.length - 1] = curObjAsArray[curObjAsArray.length - 1].slice(0, -1);
+	}
 
 	if (identation === 1) {
 		curObjAsArray = ['{'].concat(curObjAsArray).concat(['}']);
