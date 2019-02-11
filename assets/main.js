@@ -107,7 +107,7 @@ window.onload = () => {
  * Writes an object into a file
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  * 
  * @param {String} key The key that representes the locale (e.g. en-us, pt-br, etc)
  * @param {Object} object Object to be written in the file
@@ -131,7 +131,7 @@ function writeObjectToFile(key, object) {
  * Get an array of lines from an object
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  * 
  * @param {Object} object The object to be transformed into an array of lines
  * @param {Number} [identation = 1] The indentation to be used in text
@@ -176,7 +176,7 @@ function getLinesArrayFromObject(object, identation = 1) {
  * strings to make all objects equal
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  * 
  * @param {Object} objects Objects to be fixed
  * @return {Object} Fixed objects
@@ -221,7 +221,7 @@ function fixIntegrity(objects) {
  * Creates a integrity diff from locale objects
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  * 
  * @param {Object} object The objects with results of integrity comparison
  * @return {Array<String>} Diff of the objects
@@ -262,7 +262,7 @@ function createIntegrityDiffFromObjects(object) {
  * Compare objects and return a diff
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  *
  * @param {Object} objects Object with objects to compare. The key will be used
  * to separate results
@@ -318,7 +318,7 @@ function compareObjects(objects, previousKey) {
  * Writes a map into a file
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  * 
  * @param {String} key The key that representes the locale (e.g. en-us, pt-br, etc)
  * @param {Map<String, any>} map Map of to be written in the file
@@ -342,7 +342,7 @@ function writeMapToFile(key, map) {
  * Creates a sorting diff directly from map
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  * 
  * @param {Map} map The object to generate diff
  * @return {Array<String>} Lines representing the diff
@@ -369,7 +369,7 @@ function createSortingDiffFromMap(map) {
  * Get an array of lines from a map
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  * 
  * @param {Map} map The map to be transformed into an array of lines
  * @param {Number} [identation = 1] The indentation to be used in text
@@ -413,7 +413,7 @@ function getLinesArrayFromMap(map, identation = 1) {
  * Load locales from the locales folder
  *
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  * 
  * @return {Promise<Object>} A promise with loaded locales as array of lines by locale
  */
@@ -450,7 +450,7 @@ function loadLocales() {
  * Draws locales in the "loaded locales" section
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  * 
  * @param {Object} locales The locales to be drawn
  */
@@ -471,7 +471,7 @@ function drawLoadedLocales(locales) {
  * Sorts an object by key
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  * 
  * @param {Object} data The object to be sorted
  * @param {Integer} parentPosition The line which the parent starts
@@ -526,7 +526,7 @@ function sortObject(data, parentPosition = 1, parentNewPosition = 1) {
  * Get the size of an object, taking in account the size of each entry also
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  *
  * @param {Object} object The object to get full size
  * @param {Integer} [countOpeningsAndClosings] Take in account the lines
@@ -561,7 +561,7 @@ function getObjectFullSize(object, countOpeningsAndClosings, isFirstLevel = true
  * Prints a diff in screen
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  * 
  * @param {Array<String>} diff The diff to be displayed on screen
  */
@@ -583,7 +583,7 @@ function printDiff(diff) {
  * Removes all content from message container
  * 
  * @author mauricio.araldi
- * @since 0.0.1
+ * @since 0.1.0
  */
 function clearMessageContainer() {
 	let messageContainer = document.querySelector('#message');

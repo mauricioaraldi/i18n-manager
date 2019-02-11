@@ -1,6 +1,6 @@
 {
 	"name": "i18n-manager",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "Helps manage i18n files",
 	"keywords": ["i18n", "manager"],
 	"homepage": "https://github.com/mauricioaraldi/i18n-manager",

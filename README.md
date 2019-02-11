@@ -1,5 +1,5 @@
 # I18n Manager
-### Current version: 0.0.1
+### Current version: 0.1.0
 
 This project is meant to make easier to manage i18n files that follows a specific pattern which I use in my projects.
 
